@@ -1,0 +1,4 @@
+python reinforcement\gridworld.py -m
+python reinforcement\gridworld.py -h
+python reinforcement\gridworld.py -g MazeGrid
+python reinforcement\gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.02 --livingReward  10  

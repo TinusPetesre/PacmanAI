@@ -62,7 +62,14 @@ class ValueIterationAgent(ValueEstimationAgent):
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
-
+        for _ in range(0,self.iterations):
+            newvalues = self.values.copy()
+            for state in self.mdp.getStates():
+                if not self.mdp.isTerminal(state):
+                    possibleactions = self.mdp.getPossibleActions(state)
+                    opt = max([self.getQValue(state,action) for action in possibleactions])
+                    newvalues[state] = opt
+            self.values = newvalues
 
     def getValue(self, state):
         """
@@ -77,8 +84,10 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        Qvalue = 0
+        for nextstate,prob in self.mdp.getTransitionStatesAndProbs(state,action):
+            Qvalue += prob * self.mdp.getReward(state,action,nextstate) + prob * self.discount*self.getValue(nextstate)
+        return Qvalue
     def computeActionFromValues(self, state):
         """
           The policy is the best action in the given state
@@ -86,10 +95,19 @@ class ValueIterationAgent(ValueEstimationAgent):
 
           You may break ties any way you see fit.  Note that if
           there are no legal actions, which is the case at the
-          terminal state, you should return None.
+          terminal state, you should return None -> done.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        policy = util.Counter()
+        if self.mdp.isTerminal(state):
+            return None
+        possibleactions = self.mdp.getPossibleActions(state)
+
+        for action in possibleactions:
+            Qvalue = self.getQValue(state,action)
+            policy[action] = Qvalue
+        return policy.argMax()
+        
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
