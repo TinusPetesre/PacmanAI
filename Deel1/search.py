@@ -91,31 +91,36 @@ def depthFirstSearch(problem):
     from game import Directions, Actions
 
     pacmanStack = util.Stack()
-    postionList = []
+    positionList = []
     positionListFinal = {}
-    
     # Start
     
     currentState = problem.getStartState()
+    FoundGoal = problem.isGoalState(currentState)
     pacmanStack.push(currentState)
-    while(problem.isGoalState(currentState) != True):
+    while(FoundGoal != True):
         currentState = pacmanStack.pop()
-        postionList.append(currentState)
+        if(problem.isGoalState(currentState)):
+            FoundGoal = True
+            break
+        positionList.append(currentState)
         succ = problem.getSuccessors(currentState)
+
         for i in range(0,len(succ)):
-            if(not (succ[i][0] in postionList)): 
+            if(not (succ[i][0] in positionList)): 
                 pacmanStack.push(succ[i][0]) 
-                positionListFinal[succ[i][0]] = succ[i][1]
+                positionListFinal[succ[i][0]] = (currentState,succ[i][1])
 
 
     #getpath
     endList = []
+ 
+    currentState = positionListFinal[currentState]
+    while(currentState[0] != problem.getStartState()):
+        endList.insert(0,currentState[1])
+        currentState = positionListFinal[currentState[0]]
 
-    while(currentState != problem.getStartState()):
-        pathback = Directions.REVERSE[positionListFinal[currentState]]
-        endList.insert(0,positionListFinal[currentState])
-        currentState = (currentState[0] + Actions._directions[pathback][0],currentState[1] + Actions._directions[pathback][1])
-
+    endList.insert(0,currentState[1])
     return endList
 
 def breadthFirstSearch(problem):
@@ -124,31 +129,39 @@ def breadthFirstSearch(problem):
     from game import Directions, Actions
 
     pacmanQueue = util.Queue()
-    postionList = []
+    positionList = []
     positionListFinal = {}
     
     # Start
     
     currentState = problem.getStartState()
+    FoundGoal = problem.isGoalState(currentState)
     pacmanQueue.push(currentState)
-    while(problem.isGoalState(currentState) != True):
+    while(FoundGoal != True):
         currentState = pacmanQueue.pop()
-        postionList.append(currentState)
+        if(problem.isGoalState(currentState)):
+            FoundGoal = True
+            break
+        positionList.append(currentState)
         succ = problem.getSuccessors(currentState)
         for i in range(0,len(succ)):
-            if(not (succ[i][0] in postionList)): 
-                pacmanQueue.push(succ[i][0]) 
-                positionListFinal[succ[i][0]] = succ[i][1]
+            successor = succ[i][0]
+            if(not (successor in positionList)): 
+                pacmanQueue.push(successor) 
+                positionList.append(successor)
+                positionListFinal[successor] = (currentState,succ[i][1])
 
     #getpath
     endList = []
 
-    while(currentState != problem.getStartState()):
-        pathback = Directions.REVERSE[positionListFinal[currentState]]
-        endList.insert(0,positionListFinal[currentState])
-        currentState = (currentState[0] + Actions._directions[pathback][0],currentState[1] + Actions._directions[pathback][1])
+    currentState = positionListFinal[currentState]
+    while(currentState[0] != problem.getStartState()):
+        endList.insert(0,currentState[1])
+        currentState = positionListFinal[currentState[0]]
 
+    endList.insert(0,currentState[1])
     return endList
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -156,29 +169,42 @@ def uniformCostSearch(problem):
 
     from game import Directions, Actions
     pacmanPriorityQueue = util.PriorityQueue()
-    postionList = []
+    positionList = {}
     positionListFinal = {}
 
-    currentState = (problem.getStartState(),0)
+    currentState = (problem.getStartState(),[])
+    FoundGoal = problem.isGoalState(currentState[0])
 
     pacmanPriorityQueue.push(currentState,0)
-    while(problem.isGoalState(currentState[0]) != True):
+    positionList[currentState[0]] = 0
+
+    while(FoundGoal != True):
         currentState = pacmanPriorityQueue.pop()
-        postionList.append(currentState[0])
+        if(problem.isGoalState(currentState[0])):
+            FoundGoal = True
+            break
         succ = problem.getSuccessors(currentState[0])
         for i in range(0,len(succ)):
-            if(not (succ[i][0] in postionList)): 
-                pathCost = currentState[1] + succ[i][2]
-                pacmanPriorityQueue.push((succ[i][0],pathCost), pathCost) 
-                positionListFinal[succ[i][0]] = succ[i][1]
-    
-    endList = []
+            successor = succ[i][0]
+            action = succ[i][1]
+            totalPath = currentState[1] + [action]
+            totalPathCost = problem.getCostOfActions(totalPath)
+            if(not (successor in positionList)): 
+                pacmanPriorityQueue.push((successor,totalPath), totalPathCost) 
+                positionList[successor] =  totalPathCost
+                positionListFinal[successor] = (currentState[0],action)
+            elif(totalPathCost < positionList[successor]):
+                pacmanPriorityQueue.push((successor,totalPath), totalPathCost) 
+                positionList[successor] = totalPathCost
+                positionListFinal[successor] = (currentState[0], action)
 
-    
+    endList = []
+    currentState = positionListFinal[currentState[0]]
     while(currentState[0] != problem.getStartState()):
-        pathback = Directions.REVERSE[positionListFinal[currentState[0]]]
-        endList.insert(0,positionListFinal[currentState[0]])
-        currentState = ((currentState[0][0] + Actions._directions[pathback][0],currentState[0][1] + Actions._directions[pathback][1]),0)
+        endList.insert(0,currentState[1])
+        currentState = positionListFinal[currentState[0]]
+
+    endList.insert(0,currentState[1])
 
     return endList
     
@@ -198,28 +224,44 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
 
     from game import Directions, Actions
-    pacmanPriorityQueue = util.PriorityQueueWithFunction(lambda x: x[1] + heuristic(x[0],problem))
-    postionList = []
+    pacmanPriorityQueueWithFunction = util.PriorityQueueWithFunction(lambda x: x[2] + heuristic(x[0],problem))
+    positionList = {}
     positionListFinal = {}
 
-    currentState = (problem.getStartState(),0)
+    currentState = (problem.getStartState(),[],0)
+    FoundGoal = problem.isGoalState(currentState[0])
 
-    pacmanPriorityQueue.push(currentState)
-    while(problem.isGoalState(currentState[0]) != True):
-        currentState = pacmanPriorityQueue.pop()
-        postionList.append(currentState[0])
+    pacmanPriorityQueueWithFunction.push(currentState)
+    positionList[currentState[0]] = 0
+
+    while(FoundGoal != True):
+        currentState = pacmanPriorityQueueWithFunction.pop()
+        if(problem.isGoalState(currentState[0])):
+            FoundGoal = True
+            break
         succ = problem.getSuccessors(currentState[0])
         for i in range(0,len(succ)):
-            if(not (succ[i][0] in postionList)): 
-                pathCost = currentState[1] + succ[i][2]
-                pacmanPriorityQueue.push((succ[i][0],pathCost)) 
-                positionListFinal[succ[i][0]] = succ[i][1]
+            successor = succ[i][0]
+            action = succ[i][1]
+            totalPath = currentState[1] + [action]
+            totalPathCost = heuristic(successor,problem) + problem.getCostOfActions(totalPath)
+            if(not (successor in positionList)): 
+                pacmanPriorityQueueWithFunction.push((succ[i][0],totalPath,totalPathCost)) 
+                positionListFinal[successor] = (currentState[0],action)
+                positionList[successor] = totalPathCost
+            elif(totalPathCost < positionList[successor]):
+                pacmanPriorityQueueWithFunction.push((successor,totalPath,totalPathCost)) 
+                positionList[successor] = totalPathCost
+                positionListFinal[successor] = (currentState[0], action)
     
     endList = []
+    currentState = positionListFinal[currentState[0]]
     while(currentState[0] != problem.getStartState()):
-        pathback = Directions.REVERSE[positionListFinal[currentState[0]]]
-        endList.insert(0,positionListFinal[currentState[0]])
-        currentState = ((currentState[0][0] + Actions._directions[pathback][0],currentState[0][1] + Actions._directions[pathback][1]),0)
+        endList.insert(0,currentState[1])
+        currentState = positionListFinal[currentState[0]]
+
+    endList.insert(0,currentState[1])
+
     return endList
     
 
