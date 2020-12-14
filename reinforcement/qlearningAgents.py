@@ -80,6 +80,7 @@ class QLearningAgent(ReinforcementAgent):
         "*** YOUR CODE HERE ***"
         maxqvalue = self.computeValueFromQValues(state)
         for action in self.getLegalActions(state):
+          #maybe could make it the action random if there are more equally good actions instead of the first one it finds.
           if self.getQValue(state,action) == maxqvalue:
             return action
         return None
@@ -95,7 +96,6 @@ class QLearningAgent(ReinforcementAgent):
           HINT: You might want to use util.flipCoin(prob)
           HINT: To pick randomly from a list, use random.choice(list)
         """
-        # Pick Action
         legalActions = self.getLegalActions(state)
         action = None
         "*** YOUR CODE HERE ***"
@@ -117,6 +117,7 @@ class QLearningAgent(ReinforcementAgent):
           it will be called on your behalf
         """
         "*** YOUR CODE HERE ***"
+        #discount is gamma from the slides
         rewardnowplusfuturepossiblerewards = reward + self.discount * self.computeValueFromQValues(nextState)
         self.value[(state,action)] = (1 - self.alpha) * self.value[(state,action)] + self.alpha * rewardnowplusfuturepossiblerewards
     def getPolicy(self, state):
