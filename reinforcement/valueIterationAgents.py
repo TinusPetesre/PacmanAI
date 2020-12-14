@@ -62,10 +62,11 @@ class ValueIterationAgent(ValueEstimationAgent):
     def runValueIteration(self):
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
-        for _ in range(0,self.iterations):
-            newvalues = self.values.copy()
+        for _ in range(0,self.iterations): # _ kun je doen voor wanneer er geen variabele is.
+            newvalues = self.values.copy() 
             for state in self.mdp.getStates():
-                if not self.mdp.isTerminal(state):
+                if self.mdp.isTerminal(state): continue
+                else :
                     possibleactions = self.mdp.getPossibleActions(state)
                     opt = max([self.getQValue(state,action) for action in possibleactions])
                     newvalues[state] = opt
@@ -85,6 +86,7 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
         Qvalue = 0
+        #Som van  reward * probabilities + probabilities * discount * value * nextstate
         for nextstate,prob in self.mdp.getTransitionStatesAndProbs(state,action):
             Qvalue += prob * self.mdp.getReward(state,action,nextstate) + prob * self.discount*self.getValue(nextstate)
         return Qvalue
