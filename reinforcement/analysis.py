@@ -24,16 +24,16 @@ def question2():
     answerNoise = 0.0
     return answerDiscount, answerNoise
 
-# python reinforcement\gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.02 --livingReward 0
+# python gridworld.py -a value -i 100 -g DiscountGrid --discount 0.9 --noise 0.2 --livingReward 0.1
 def question3a():
     answerDiscount = 0.1
     answerNoise = 0.0001
-    answerLivingReward = 0.0    
+    answerLivingReward = 0.1
     return answerDiscount, answerNoise, answerLivingReward
     # If not possible, return 'NOT POSSIBLE'
 
 def question3b():
-    answerDiscount = 0.1
+    answerDiscount = 0.3
     answerNoise = 0.1
     answerLivingReward = 0.1
     return answerDiscount, answerNoise, answerLivingReward
