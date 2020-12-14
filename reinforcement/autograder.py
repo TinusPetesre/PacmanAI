@@ -1,4 +1,3 @@
-python pacman.py -p PacmanQAgent -x 2000 -n 2010 -l smallGrid
 # autograder.py
 # -------------
 # Licensing Information:  You are free to use or extend these projects for
